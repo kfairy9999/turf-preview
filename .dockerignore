@@ -1,0 +1,8 @@
+.hf_token
+.pin
+.env
+.git
+.gitignore
+__pycache__
+*.pyc
+.venv

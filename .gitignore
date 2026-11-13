@@ -1,0 +1,9 @@
+*.pyc
+.env
+.hf_token
+.pin
+.venv/
+__pycache__/
+.render_api_key
+.render_owner_id
+.render_service_id

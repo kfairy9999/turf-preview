@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f6b3a">
+<title>Turf Preview</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Cpath d=%22M1 15 3 6l2 9 2-12 2 12 2-10 2 10 2-7 1 7z%22 fill=%22%234f9d3a%22/%3E%3C/svg%3E">
+<style>
+:root{--bg:#f4f1e6;--bg2:#fbfaf4;--card:#ffffff;--line:#d9d2bd;--accent:#3f8a3a;--accent2:#5fae4e;--green:#2f6b3a;--earth:#8a6a43;--text:#1f2a1c;--muted:#6b6a58;--err:#b3321f}
+*{box-sizing:border-box}
+html,body{margin:0;background:radial-gradient(1200px 600px at 50% -200px,#dcebc8 0%,var(--bg) 60%) fixed,var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px calc(32px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;padding:6px 0 14px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(145deg,var(--accent2),var(--green));display:grid;place-items:center;box-shadow:0 2px 10px rgba(47,107,58,.3)}
+.logo svg{width:22px;height:22px}
+h1{font-size:20px;margin:0;letter-spacing:.2px}
+.sub{color:var(--muted);font-size:13px;margin-top:1px}
+.iconbtn{min-width:48px;height:48px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:15px;padding:0 12px}
+.card{background:var(--card);box-shadow:0 1px 3px rgba(60,50,20,.06);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.step{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:8px}
+h2{font-size:18px;margin:0 0 10px}
+.row{display:flex;gap:10px}
+.btn{appearance:none;border:0;border-radius:14px;min-height:56px;padding:0 18px;font-size:17px;font-weight:650;color:#fff;background:linear-gradient(180deg,var(--accent2),var(--accent));width:100%;cursor:pointer}
+.btn.secondary{background:var(--bg2);color:var(--text);border:1px solid var(--line)}
+.btn:disabled{opacity:.5}
+.photo-preview{margin-top:12px;border-radius:12px;overflow:hidden;display:none;border:1px solid var(--line)}
+.photo-preview img{display:block;width:100%}
+.styles{display:grid;grid-template-columns:1fr;gap:10px}
+.style{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg2);cursor:pointer}
+.style input{position:absolute;opacity:0;pointer-events:none}
+.style.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.swatch{flex:none;width:56px;height:40px;border-radius:10px;border:1px solid rgba(0,0,0,.15);box-shadow:inset 0 -6px 0 rgba(138,106,67,.35)}
+.style b{display:block;font-size:15.5px}
+.style small{color:var(--muted);font-size:12.5px}
+label.f{display:block;font-size:14px;color:var(--muted);margin:10px 0 6px}
+input.t{width:100%;min-height:52px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--text);font-size:17px;padding:0 14px}
+input.t:focus{outline:2px solid var(--accent);outline-offset:1px}
+.progress{display:none;text-align:center;padding:22px 10px}
+.bar{height:8px;border-radius:8px;background:#e8e2cf;overflow:hidden;margin:14px 0 8px}
+.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s linear}
+.grow{display:flex;justify-content:center;align-items:flex-end;gap:5px;height:36px;border-bottom:4px solid var(--earth);width:150px;margin:0 auto}
+.grow span{width:7px;height:34px;border-radius:7px 7px 0 0;background:linear-gradient(0deg,var(--green),var(--accent2));transform-origin:bottom;animation:gr 1.4s infinite ease-in-out}
+.grow span:nth-child(2n){animation-delay:.15s;height:28px}.grow span:nth-child(3n){animation-delay:.3s;height:31px}.grow span:nth-child(4n){animation-delay:.45s}.grow span:nth-child(5n){animation-delay:.6s;height:26px}
+@keyframes gr{0%,100%{transform:scaleY(.35) rotate(-4deg)}50%{transform:scaleY(1) rotate(4deg)}}
+.err{display:none;color:var(--err);background:rgba(179,50,31,.06);border:1px solid rgba(179,50,31,.35);border-radius:12px;padding:12px;margin-top:12px}
+.result{display:none}
+.cmp{position:relative;border-radius:12px;overflow:hidden;touch-action:pan-y;user-select:none;border:1px solid var(--line);background:#000}
+.cmp img{display:block;width:100%;height:auto}
+.cmp .before{position:absolute;inset:0;overflow:hidden;clip-path:inset(0 50% 0 0)}
+.cmp .before img{width:100%;height:100%;object-fit:cover}
+.handle{position:absolute;top:0;bottom:0;left:50%;width:3px;margin-left:-1.5px;background:#fff;box-shadow:0 0 8px rgba(0,0,0,.6)}
+.handle::after{content:"◀ ▶";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#2f6b3a;font-size:11px;font-weight:800;border-radius:20px;padding:8px 9px;white-space:nowrap}
+.tag{position:absolute;top:8px;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.55);color:#fff;font-size:12px}
+.tag.l{left:8px}.tag.r{right:8px}
+input[type=range]{width:100%;margin:12px 0 4px;accent-color:var(--accent);height:32px}
+.note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.check{display:flex;align-items:center;gap:10px;min-height:48px;font-size:15px}
+.check input{width:22px;height:22px;accent-color:var(--accent)}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--bg2);color:var(--text);width:min(92vw,460px);padding:18px}
+dialog::backdrop{background:rgba(20,25,15,.6)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.seg label{position:relative}.seg input{position:absolute;opacity:0}.seg span{display:block;min-height:56px;padding:9px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg2)}.seg b{display:block;font-size:15px}.seg small{color:var(--muted);font-size:12px}.seg input:checked+span{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo"><svg viewBox="0 0 24 24" fill="#fff"><path d="M2 21 4.5 9 7 21l2.5-16L12 21l2.5-14L17 21l2.5-10L22 21z"/></svg></div>
+      <div><h1>Turf Preview</h1><div class="sub">See your yard with artificial grass</div></div>
+    </div>
+    <button class="iconbtn" id="openSettings" aria-label="Settings">⚙ Settings</button>
+  </header>
+
+  <section class="card">
+    <div class="step">Step 1</div>
+    <h2>Add the yard photo</h2>
+    <div class="row">
+      <button class="btn" id="takePhoto">📷 Take photo</button>
+      <button class="btn secondary" id="pickPhoto">🖼 Upload</button>
+    </div>
+    <input type="file" id="camInput" accept="image/*" capture="environment" hidden>
+    <input type="file" id="fileInput" accept="image/*" hidden>
+    <div class="photo-preview" id="photoPreview"><img id="photoImg" alt="Yard photo"></div>
+    <div class="note">Best results: a daylight photo with the whole lawn in frame.</div>
+  </section>
+
+  <section class="card">
+    <div class="step">Step 2</div>
+    <h2>Pick a turf style</h2>
+    <div class="styles" id="styles"></div>
+    <label class="f" for="leadName">Customer name (optional, used in the file name)</label>
+    <input class="t" id="leadName" autocomplete="off" placeholder="e.g. Smith">
+  </section>
+
+  <section class="card" id="genCard">
+    <div class="step">Step 3</div>
+    <div class="seg" role="radiogroup" aria-label="Quality">
+      <label><input type="radio" name="quality" value="best" checked><span><b>Best</b><small>More careful edit · slower</small></span></label>
+      <label><input type="radio" name="quality" value="saver"><span><b>Saver</b><small>Faster preview</small></span></label>
+    </div>
+    <button class="btn" id="generate" disabled>✨ Generate preview</button>
+    <div class="progress" id="progress">
+      <div class="grow"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="bar"><i id="barFill"></i></div>
+      <div id="progText">Rolling out the turf… this can take 1–3 minutes on the free GPU.</div>
+    </div>
+    <div class="err" id="err" role="alert"></div>
+  </section>
+
+  <section class="card result" id="result">
+    <div class="step">Your preview</div>
+    <div class="cmp" id="cmp">
+      <img id="afterImg" alt="After: yard with artificial grass">
+      <div class="before" id="beforeWrap"><img id="beforeImg" alt="Before"></div>
+      <div class="handle" id="handle"></div>
+      <span class="tag l">Before</span><span class="tag r">After</span>
+    </div>
+    <input type="range" id="slider" min="0" max="100" value="50" aria-label="Before and after slider">
+    <label class="check"><input type="checkbox" id="includeBefore"> Include the "before" photo in the shared image</label>
+    <div class="row" style="margin-top:6px">
+      <button class="btn" id="shareBtn">↗ Share</button>
+      <button class="btn secondary" id="downloadBtn">⬇ Save</button>
+    </div>
+    <button class="btn secondary" id="again" style="margin-top:10px">↻ Try again (new variation)</button>
+    <div class="note">Preview only. Actual install may vary.</div>
+  </section>
+
+  <div class="foot">AI-generated preview. Photos are not stored.</div>
+</div>
+
+<dialog id="settings">
+  <h2>Settings</h2>
+  <label class="f" for="pin">Access PIN</label>
+  <input class="t" id="pin" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="6-digit PIN">
+  <label class="f" for="bizName">Your business name (printed on the image)</label>
+  <input class="t" id="bizName" autocomplete="organization" placeholder="optional">
+  <label class="f" for="bizPhone">Your phone (printed on the image)</label>
+  <input class="t" id="bizPhone" type="tel" autocomplete="tel" placeholder="optional">
+  <div class="err" id="pinErr"></div>
+  <div class="row" style="margin-top:16px">
+    <button class="btn" id="saveSettings">Save</button>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  const STYLES = [
+    {id:"lush-green", name:"Lush Green", desc:"Vibrant, dense medium-green turf", sw:"linear-gradient(160deg,#6cbf4a,#3f9a34)"},
+    {id:"olive-natural", name:"Natural Olive", desc:"Olive, sage and light green with brown thatch", sw:"repeating-linear-gradient(100deg,#7d8f45 0 3px,#a3b56a 3px 5px,#8a7a4c 5px 6px,#6f8c3e 6px 9px)"},
+    {id:"striped", name:"Mow Stripes", desc:"Two-tone green with pro mowing stripes", sw:"repeating-linear-gradient(90deg,#5fae4e 0 9px,#3a7d33 9px 18px)"},
+    {id:"dark-emerald", name:"Emerald", desc:"Deep, rich dark green, formal look", sw:"linear-gradient(160deg,#2f7a3e,#1b5229)"},
+    {id:"putting-green", name:"Putting Green", desc:"Short, tight golf-green turf", sw:"radial-gradient(circle at 70% 40%,#fff 0 3px,#222 3px 4px,transparent 4px),linear-gradient(160deg,#5ccf5a,#37a83d)"},
+  ];
+  const $ = id => document.getElementById(id);
+  const state = { src:null, style:"lush-green", crop:null, afterBlobUrl:null, afterImg:null, beforeCanvas:null };
+
+  // ---------- styles ----------
+  const wrap = $("styles");
+  STYLES.forEach(s => {
+    const l = document.createElement("label");
+    l.className = "style" + (s.id === state.style ? " sel" : "");
+    l.innerHTML = `<input type="radio" name="style" value="${s.id}" ${s.id===state.style?"checked":""}><span class="swatch" style="background:${s.sw}"></span><span><b>${s.name}</b><small>${s.desc}</small></span>`;
+    l.querySelector("input").addEventListener("change", e => {
+      state.style = e.target.value;
+      wrap.querySelectorAll(".style").forEach(x => x.classList.toggle("sel", x.querySelector("input").checked));
+    });
+    wrap.appendChild(l);
+  });
+
+  // ---------- settings ----------
+  const dlg = $("settings");
+  function loadSettings(){
+    $("bizName").value = localStorage.getItem("tp_biz") || "";
+    $("bizPhone").value = localStorage.getItem("tp_phone") || "";
+    $("pin").value = sessionStorage.getItem("tp_pin") || "";
+  }
+  function openSettings(msg){
+    loadSettings();
+    $("pinErr").style.display = msg ? "block" : "none";
+    $("pinErr").textContent = msg || "";
+    dlg.showModal();
+  }
+  $("openSettings").onclick = () => openSettings();
+  $("saveSettings").onclick = async () => {
+    localStorage.setItem("tp_biz", $("bizName").value.trim().slice(0,60));
+    localStorage.setItem("tp_phone", $("bizPhone").value.trim().slice(0,30));
+    const pin = $("pin").value.trim();
+    if (!pin) { $("pinErr").style.display="block"; $("pinErr").textContent="Enter the access PIN."; return; }
+    try {
+      const r = await fetch("/api/check", {method:"POST", headers:{"x-access-pin":pin}});
+      if (!r.ok) { $("pinErr").style.display="block"; $("pinErr").textContent="That PIN didn't work. Check it and try again."; return; }
+    } catch { $("pinErr").style.display="block"; $("pinErr").textContent="No connection. Check your signal and try again."; return; }
+    sessionStorage.setItem("tp_pin", pin);
+    dlg.close();
+  };
+  if (!sessionStorage.getItem("tp_pin")) setTimeout(() => openSettings(), 300);
+
+  // ---------- photo ----------
+  $("takePhoto").onclick = () => $("camInput").click();
+  $("pickPhoto").onclick = () => $("fileInput").click();
+  [$("camInput"), $("fileInput")].forEach(inp => inp.addEventListener("change", async () => {
+    const f = inp.files && inp.files[0]; inp.value = "";
+    if (!f) return;
+    try {
+      const bmp = await createImageBitmap(f, {imageOrientation:"from-image"});
+      state.src = bmp;
+      const c = document.createElement("canvas");
+      const s = Math.min(1, 1000 / Math.max(bmp.width, bmp.height));
+      c.width = Math.round(bmp.width*s); c.height = Math.round(bmp.height*s);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      $("photoImg").src = c.toDataURL("image/jpeg", .85);
+      $("photoPreview").style.display = "block";
+      $("generate").disabled = false;
+      hideErr();
+    } catch { showErr("Couldn't open that photo. Try a JPG or PNG photo."); }
+  }));
+
+  // crop to aspect between 9:16 and 16:9, compute sizes
+  function plan(bmp){
+    let sw = bmp.width, sh = bmp.height, sx = 0, sy = 0;
+    const maxA = 16/9, minA = 9/16; let a = sw/sh;
+    if (a > maxA) { const nw = Math.round(sh*maxA); sx = Math.round((sw-nw)/2); sw = nw; a = maxA; }
+    if (a < minA) { const nh = Math.round(sw/minA); sy = Math.round((sh-nh)/2); sh = nh; a = minA; }
+    const r16 = n => Math.max(256, Math.round(n/16)*16);
+    let ow, oh; if (a >= 1) { ow = 1024; oh = r16(1024/a); } else { oh = 1024; ow = r16(1024*a); }
+    let iw, ih; if (a >= 1) { iw = 512; ih = r16(512/a); } else { ih = 512; iw = r16(512*a); }
+    return {sx, sy, sw, sh, ow, oh, iw, ih};
+  }
+  function drawCrop(bmp, p, w, h){
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const g = c.getContext("2d"); g.imageSmoothingQuality = "high";
+    g.drawImage(bmp, p.sx, p.sy, p.sw, p.sh, 0, 0, w, h); return c;
+  }
+  const toBlob = (c, type="image/jpeg", q=.9) => new Promise(r => c.toBlob(r, type, q));
+
+  // ---------- generate ----------
+  let timer;
+  function startProgress(){
+    $("generate").style.display="none"; $("progress").style.display="block";
+    let t = 0; $("barFill").style.width = "3%";
+    const msgs = ["Rolling out the turf… this can take 1–3 minutes on the free GPU.","Matching your lawn edges…","Trimming around the beds…","Brushing up the blades…","Almost there…"];
+    timer = setInterval(() => { t++; $("barFill").style.width = Math.min(95, 3 + t*1.6) + "%"; $("progText").textContent = msgs[Math.min(msgs.length-1, Math.floor(t/12))]; }, 1000);
+  }
+  function stopProgress(){ clearInterval(timer); $("barFill").style.width="100%"; setTimeout(()=>{ $("progress").style.display="none"; $("generate").style.display="block"; }, 250); }
+  function showErr(m){ $("err").textContent = m; $("err").style.display = "block"; }
+  function hideErr(){ $("err").style.display = "none"; }
+
+  async function generate(){
+    hideErr();
+    const pin = sessionStorage.getItem("tp_pin");
+    if (!pin) { openSettings("Enter the access PIN first."); return; }
+    if (!state.src) { showErr("Add a yard photo first."); return; }
+    const p = plan(state.src); state.crop = p;
+    const input = await toBlob(drawCrop(state.src, p, p.iw, p.ih), "image/jpeg", .92);
+    state.beforeCanvas = drawCrop(state.src, p, p.ow, p.oh);
+    const fd = new FormData();
+    fd.append("image", input, "yard.jpg");
+    fd.append("style", state.style);
+    fd.append("quality", (document.querySelector("input[name=quality]:checked")||{}).value || "best");
+    fd.append("width", p.ow); fd.append("height", p.oh);
+    fd.append("seed", String(Math.floor(Math.random()*1e9)));
+    startProgress();
+    try {
+      const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 240000);
+      const r = await fetch("/api/generate", {method:"POST", headers:{"x-access-pin":pin}, body:fd, signal:ctrl.signal});
+      clearTimeout(to);
+      let data = {}; try { data = await r.json(); } catch {}
+      if (r.status === 401) { sessionStorage.removeItem("tp_pin"); stopProgress(); openSettings(data.error || "Enter the access PIN again."); return; }
+      if (!r.ok || !data.image) throw new Error(data.error || "Something went wrong. Please try again.");
+      const img = new Image(); img.src = "data:image/jpeg;base64," + data.image; await img.decode();
+      state.afterImg = img;
+      $("afterImg").src = img.src;
+      $("beforeImg").src = state.beforeCanvas.toDataURL("image/jpeg", .9);
+      $("result").style.display = "block";
+      setSlider(50);
+      stopProgress();
+      $("result").scrollIntoView({behavior:"smooth", block:"start"});
+    } catch (e) {
+      stopProgress();
+      showErr(e.name === "AbortError" ? "That took too long. Check your signal and try again." : (e.message === "Failed to fetch" ? "No connection. Check your signal and try again." : e.message));
+    }
+  }
+  $("generate").onclick = generate;
+  $("again").onclick = () => { $("genCard").scrollIntoView({behavior:"smooth"}); generate(); };
+
+  // ---------- slider ----------
+  function setSlider(v){ $("slider").value = v; $("beforeWrap").style.clipPath = `inset(0 ${100-v}% 0 0)`; $("handle").style.left = v + "%"; }
+  $("slider").addEventListener("input", e => setSlider(+e.target.value));
+  const cmp = $("cmp");
+  function dragAt(x){ const r = cmp.getBoundingClientRect(); setSlider(Math.max(0, Math.min(100, (x - r.left) / r.width * 100))); }
+  cmp.addEventListener("pointerdown", e => { cmp.setPointerCapture(e.pointerId); dragAt(e.clientX); });
+  cmp.addEventListener("pointermove", e => { if (e.buttons) dragAt(e.clientX); });
+
+  // ---------- compose output ----------
+  function compose(){
+    const after = state.afterImg, W = after.naturalWidth, H = after.naturalHeight;
+    const both = $("includeBefore").checked;
+    const biz = (localStorage.getItem("tp_biz")||"").trim(), phone = (localStorage.getItem("tp_phone")||"").trim();
+    const pad = Math.round(W*0.02), capH = Math.round(Math.max(56, W*0.075));
+    const stacked = both && W/H >= 1; // landscape: stack vertically; portrait: side by side
+    const cw = both && !stacked ? W*2 + pad : W, ch = (both && stacked ? H*2 + pad : H) + capH;
+    const c = document.createElement("canvas"); c.width = cw; c.height = ch;
+    const g = c.getContext("2d"); g.fillStyle = "#1f2a1c"; g.fillRect(0,0,cw,ch);
+    const label = (txt, x, y) => { g.font = `600 ${Math.round(W*0.026)}px system-ui,sans-serif`; const m = g.measureText(txt).width; g.fillStyle="rgba(0,0,0,.55)"; g.fillRect(x, y, m + W*0.03, W*0.045); g.fillStyle="#fff"; g.textBaseline="middle"; g.fillText(txt, x + W*0.015, y + W*0.0225); };
+    if (both) {
+      g.drawImage(state.beforeCanvas, 0, 0, W, H);
+      label("Before", pad, pad);
+      const ax = stacked ? 0 : W + pad, ay = stacked ? H + pad : 0;
+      g.drawImage(after, ax, ay, W, H); label("With turf", ax + pad, ay + pad);
+    } else g.drawImage(after, 0, 0, W, H);
+    const y0 = ch - capH;
+    g.fillStyle = "#5fae4e"; g.fillRect(0, y0, cw, Math.max(2, Math.round(W*0.003)));
+    g.textBaseline = "middle";
+    const line = [biz, phone].filter(Boolean).join("  ·  ");
+    g.fillStyle = "#f4f1e6"; g.font = `600 ${Math.round(capH*0.34)}px system-ui,sans-serif`;
+    if (line) g.fillText(line, pad, y0 + capH*0.38);
+    g.fillStyle = "#c9c4a8"; g.font = `${Math.round(capH*0.24)}px system-ui,sans-serif`;
+    g.fillText("Preview only. Actual install may vary.", pad, line ? y0 + capH*0.75 : y0 + capH/2);
+    return c;
+  }
+  function fileName(){
+    const lead = $("leadName").value.trim().replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").slice(0, 40);
+    const n = new Date(), d = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`;
+    return `turf-preview${lead ? "-" + lead : ""}-${d}.jpg`;
+  }
+  async function outFile(){ const b = await toBlob(compose(), "image/jpeg", .92); return new File([b], fileName(), {type:"image/jpeg"}); }
+  $("downloadBtn").onclick = async () => {
+    const f = await outFile(); const u = URL.createObjectURL(f);
+    const a = document.createElement("a"); a.href = u; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 4000);
+  };
+  $("shareBtn").onclick = async () => {
+    const f = await outFile();
+    if (navigator.canShare && navigator.canShare({files:[f]})) {
+      try { await navigator.share({files:[f], title:"Artificial grass preview", text:"Here's a preview of your yard with artificial grass."}); } catch (e) { if (e.name !== "AbortError") showErr("Sharing didn't work. Use Save instead, then text the photo."); }
+    } else { $("downloadBtn").click(); }
+  };
+})();
+</script>
+</body>
+</html>
